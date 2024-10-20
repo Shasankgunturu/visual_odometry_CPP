@@ -118,11 +118,10 @@ class Odometry {
 
         std::pair<cv::Mat, cv::Mat> getRT(cv::Mat essentialMatrix) {
             cv::Mat                     R1, R2, _t;
-            std::vector<cv::Mat>        R{R1,R1,R2,R2};
-            std::vector<cv::Mat>        t{_t, -_t, _t, -_t};
             std::vector<double>         sum_z{0,0,0,0}, scale{0,0,0,0};
             cv::decomposeEssentialMat   (essentialMatrix, R1, R2, _t);
-
+            std::vector<cv::Mat>        R{R1,R1,R2,R2}; 
+            std::vector<cv::Mat>        t{_t, -_t, _t, -_t};
             for (int i=0; i<R.size(); i++) {
                 cv::Mat T               = cv::Mat::eye(4, 4, K.type());  
                 R[i].copyTo             (T(cv::Rect(0, 0, 3, 3)));

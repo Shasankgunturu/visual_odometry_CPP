@@ -18,7 +18,7 @@ while True:
     key = cv2.waitKey(1)
     
     # if key == ord('s'):
-    name = "/home/shasankgunturu/personal/ComputerVisionBasics/src/images/data1/captured_image_"+str(i)+".png"
+    name = "/home/shasankgunturu/personal/ComputerVisionBasics/src/images/data2/captured_image_"+str(i)+".png"
     cv2.imwrite(name, frame)
     i=i+1
     print("Image saved as captured_image.jpg")

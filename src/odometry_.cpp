@@ -2,14 +2,14 @@
 #include <fstream>
 
 // Modify the below parameters before executing the code.
-#define NUM_FRAMES 301
-#define FIRST_FRAME 15
+#define NUM_FRAMES 318
+#define FIRST_FRAME 13
 #define SKIPPING_THRESHOLD 10
 #define MATCHES_THRESHOLD 10
 
-std::string folder                  = "/home/shasankgunturu/personal/ComputerVisionBasics/src/images/data1";
+std::string folder                  = "/home/shasankgunturu/personal/ComputerVisionBasics/src/images/data2";
 std::string image_format            = ".png";
-std::string estimated_poses_path    = "/home/shasankgunturu/personal/ComputerVisionBasics/src/output/poses.txt";
+std::string estimated_poses_path    = "/home/shasankgunturu/personal/ComputerVisionBasics/src/output/poses1.txt";
 cv::Mat K                           = (cv::Mat_<double>(3, 3) << 
                                         1253.1012617250694, 0.0, 471.6666914725001, 
                                         0.0, 1233.192145117128, 327.9885858399886, 
@@ -48,19 +48,31 @@ int main() {
         image2                      = cv::imread(folder+"/captured_image_"+ std::to_string(i) +image_format, cv::IMREAD_GRAYSCALE);
         o.image1                    = image1;
         o.image2                    = image2;
-        cv::Mat new_transform       = o.getOdom(MATCHES_THRESHOLD);
-        if (i==FIRST_FRAME+1) {
-            new_pose                = new_transform;
-        }
-        else {
-            new_pose                = curr_pose*new_transform.inv();
-            cv::Mat tester          = new_pose-curr_pose;
-            cv::Vec4f test_point    = tester.col(3);
-            // Check for Outliers
-            if ((test_point[0]>SKIPPING_THRESHOLD) || (test_point[1]>SKIPPING_THRESHOLD) || (test_point[2]>SKIPPING_THRESHOLD)) {
-                std::cout << "Skipping Frame: " << i-FIRST_FRAME << std::endl;
-                continue;
+        try{
+            cv::Mat new_transform       = o.getOdom(MATCHES_THRESHOLD);
+            if (i==FIRST_FRAME+1) {
+                new_pose                = new_transform;
             }
+            else {
+                new_pose                = curr_pose*new_transform.inv();
+                cv::Mat tester          = new_pose-curr_pose;
+                cv::Vec4f test_point    = tester.col(3);
+                // Check for Outliers
+                if ((test_point[0]>SKIPPING_THRESHOLD) || (test_point[1]>SKIPPING_THRESHOLD) || (test_point[2]>SKIPPING_THRESHOLD)) {
+                    std::cout << "Skipping Frame: " << i-FIRST_FRAME << std::endl;
+                    continue;
+                }
+            }
+        }
+        catch (const std::exception& e) {
+            std::cout << "Exception: " << e.what() << std::endl;
+            std::cout << "Skipping Frame: " << i - FIRST_FRAME << std::endl;
+            continue;
+        }
+        catch (...) {
+            std::cout << "Unknown exception caught" << std::endl;
+            std::cout << "Skipping Frame: " << i - FIRST_FRAME << std::endl;
+            continue;
         }
         curr_pose                   = new_pose;
         image1                      = image2;
