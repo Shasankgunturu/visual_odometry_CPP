@@ -1,3 +1,0 @@
-/home/shasankgunturu/personal/ComputerVisionBasics/src/build/CMakeFiles/odometry.dir
-/home/shasankgunturu/personal/ComputerVisionBasics/src/build/CMakeFiles/edit_cache.dir
-/home/shasankgunturu/personal/ComputerVisionBasics/src/build/CMakeFiles/rebuild_cache.dir
