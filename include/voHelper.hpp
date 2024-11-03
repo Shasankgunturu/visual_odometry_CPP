@@ -99,7 +99,7 @@ class vo {
                 pts4D_2 = (T_temp * pts4D_1);
                 cv::Mat pts3D_1 = convertFrom4DHomogeneous(pts4D_1.t());
                 cv::Mat pts3D_2 = convertFrom4DHomogeneous(pts4D_2.t());
-                std::cout << "Sizes: "<< pts3D_1.size << ", " <<pts3D_2.size   <<"\n";
+                // std::cout << "Sizes: "<< pts3D_1.size << ", " <<pts3D_2.size   <<"\n";
                 for (int j=0; j<pts3D_1.rows; j++) {
                     cv::Vec3f point1    = pts3D_1.at<cv::Vec3f>(j);
                     cv::Vec3f point2    = pts3D_2.at<cv::Vec3f>(j);

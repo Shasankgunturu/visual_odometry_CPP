@@ -12,7 +12,7 @@ std::vector<std::vector<double>> loadGroundTruthPoses(const std::string& filenam
         std::cerr << "Error opening ground-truth poses file: " << filename << std::endl;
         return poses;
     }
-    double pose[12]; // Since each row is a 3x4 matrix flattened
+    double pose[12];
     while (infile >> pose[0] >> pose[1] >> pose[2] >> pose[3] >> pose[4] >> pose[5] >> pose[6] >> pose[7] >> pose[8] >> pose[9] >> pose[10] >> pose[11]) {
         poses.push_back({pose[3], pose[7], pose[11]});
     }
@@ -26,10 +26,9 @@ cv::Mat nthGroundTruthPose(const std::string& filename, int n) {
         std::cerr << "Error opening ground-truth poses file: " << filename << std::endl;
         return cv::Mat();
     }
-    double pose[12];  // Each line is a 3x4 matrix flattened
+    double pose[12];  
     std::string line;
     int currentLine = 0;
-    // Skip lines until reaching the nth line
     while (std::getline(infile, line)) {
         if (currentLine == n) {
             std::istringstream iss(line);
@@ -37,8 +36,6 @@ cv::Mat nthGroundTruthPose(const std::string& filename, int n) {
                 iss >> pose[i];
             }
             infile.close();
-
-            // Create a 3x4 matrix and populate it with pose data
             cv::Mat poseMat(3, 4, CV_64F);
             for (int row = 0; row < 3; ++row) {
                 for (int col = 0; col < 4; ++col) {
@@ -57,23 +54,18 @@ void plotPosesPCL(const std::vector<std::vector<double>>& ground_truth_poses, co
     pcl::PointCloud<pcl::PointXYZ>::Ptr est_cloud(new pcl::PointCloud<pcl::PointXYZ>());
     pcl::visualization::PCLVisualizer::Ptr viewer(new pcl::visualization::PCLVisualizer("Pose Trajectories: Ground Truth vs Estimated"));
     viewer->addCoordinateSystem (1.0);
-    viewer->setBackgroundColor(0, 0, 0);
+    viewer->setBackgroundColor(255, 255, 255);
     for (size_t i = 0; i < estimated_poses.size(); ++i) {
         if (i < ground_truth_poses.size()) {
-            // gt_cloud->points.emplace_back(pcl::PointXYZ(ground_truth_poses[i][0], ground_truth_poses[i][1], ground_truth_poses[i][2]));
             gt_cloud->points.emplace_back(pcl::PointXYZ(ground_truth_poses[i][0], ground_truth_poses[i][2], 0));
         }
         est_cloud->points.emplace_back(pcl::PointXYZ(estimated_poses[i].translation().x(), estimated_poses[i].translation().z(), 0));
-        // viewer->addCoordinateSystem(0.5, estimated_poses[i], "2nd cam");
     }
-
-    // Ground truth in blue
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> gt_color(gt_cloud, 0, 0, 255);
     viewer->addPointCloud<pcl::PointXYZ>(gt_cloud, gt_color, "ground truth");
     viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "ground truth");
 
-    // Estimated poses in red
-    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> est_color(est_cloud, 255, 0, 0);
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> est_color(est_cloud, 0, 255, 255);
     viewer->addPointCloud<pcl::PointXYZ>(est_cloud, est_color, "estimated");
     viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "estimated");
 
@@ -85,6 +77,30 @@ void plotPosesPCL(const std::vector<std::vector<double>>& ground_truth_poses, co
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
+
+void savePosesToFile(const std::vector<std::vector<double>>& ground_truth_poses, const std::vector<Eigen::Affine3f>& estimated_poses, const std::string& filename) {
+    std::ofstream file(filename);
+
+    if (!file.is_open()) {
+        std::cerr << "Error opening file: " << filename << std::endl;
+        return;
+    }
+
+    for (size_t i = 0; i < estimated_poses.size(); ++i) {
+        double gt_x = (i < ground_truth_poses.size()) ? ground_truth_poses[i][0] : 0;
+        double gt_z = (i < ground_truth_poses.size()) ? ground_truth_poses[i][2] : 0;
+
+        double est_x = estimated_poses[i].translation().x();
+        double est_z = estimated_poses[i].translation().z();
+
+        file << gt_x << " " << gt_z << " " << est_x << " " << est_z << "\n";
+    }
+
+    file.close();
+    std::cout << "Data saved to " << filename << std::endl;
+}
+
+
 
 void savePosesToFile(const std::vector<std::vector<double>>& poses, const std::string& filename) {
     std::ofstream outfile(filename);
@@ -121,7 +137,6 @@ Eigen::Affine3f mat2Eigen(cv::Mat R, cv::Mat t) {
     R.convertTo(R, CV_32F);
     t.convertTo(t, CV_32F);
 
-    //this shows how a camera moves
     cv::Mat Rinv = R.t(); 
     cv::Mat T = -Rinv * t;
 

@@ -37,7 +37,7 @@ int main() {
         vo_obj.image2   = image2;
         cv::Mat T       = vo_obj.getT(SKIPPING_THRESHOLD);
         // cv::Mat T_inv   = T.inv();
-        if (i%5==0) {
+        if (i%8==0) {
             prevPose    = nthGroundTruthPose(ground_truth_poses_path, i);
         }
         else {
@@ -47,5 +47,6 @@ int main() {
         image1          = image2;
         std::cout << "Image : " << i <<"\n#################################################################\n\n\n";
     }
+    savePosesToFile(ground_truth_poses, final_poses, estimated_poses_path);
     plotPosesPCL(ground_truth_poses, final_poses);
 }
